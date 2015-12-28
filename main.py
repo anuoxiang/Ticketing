@@ -15,7 +15,7 @@ import json  # JSON解析
 from datetime import datetime  # 日期处理
 import time  # 多线程控制
 import thread
-
+import random
 
 class TxtInfo:
     txtDisplayDelay = 5
@@ -49,24 +49,35 @@ def ScanCode(image):
 
 
 # 网络验证
-
+def CheckQRCode(content):
+    url = "http://bbb.dgshare.cn/Ticketing/Verify"
+    values = {'Password':'this is my first', 'QRCode':content.encode('utf-8')}
+    params = str(values)
+    headers = {"Content-type":"application/json","Accept": "application/json"}
+    req = urllib2.Request(url, params, headers)
+    response = urllib2.urlopen(req)
+    requeststr = response.read()
+    jsondata = json.loads(requeststr)
+    if jsondata["Msg"]=="OK":
+        Print(jsondata["ItemName"], jsondata["Code"])
+    else:
+        Echo(jsondata["Msg"])
 
 # 打印
-def Print():
+def Print(item,code):
     Echo("准备打印...")
     usb = printer.Usb(0x0416, 0x5011, 0, out_ep=0x01)
 
     Echo("打印...")
     usb.image('logo.bmp')
     usb.set('CENTER', 'B', 'B', 1, 2)
-    usb.text(u"上海第一八佰伴\n\n".encode('gbk'))
-    usb.text(u"岁末疯抢\n\n".encode('gbk'))
+    usb.text(u"第一八佰伴岁末疯抢\n\n".encode('gbk'))
     #内容正文开始
-    usb.set('LEFT', 'B', 'B', 1, 1)
-    usb.text(u"老凤祥50g金条【预约券】".encode('gbk') + "\n")
+    usb.set('LEFT', 'B', 'B', 1, 2)
+    usb.text(item.encode('gbk') + "\n")
 
     usb.set('LEFT', 'A', 'A', 1, 1)
-    usb.text(u"抢购时间:%s\n".encode('gbk') % datetime.now().strftime("%m/%d %H:%M:%S"))
+    usb.text(u"打印时间:%s\n".encode('gbk') % datetime.now().strftime("%m/%d %H:%M:%S"))
 
     '''
     usb.set('LEFT', 'B', 'A', 1, 1)
@@ -78,14 +89,14 @@ def Print():
     usb.set('CENTER', '', '', 1, 1)
     usb.text(u"校验码\n".encode('gbk'))
     # usb.barcode('9787900420206', 'EAN13', 64, 2, '', '')
-    usb.qr('52588803')
+    usb.qr(code)
     usb.text("\n\n")
 
     usb.set('LEFT', 'A', 'A', 1, 1)
     usb.text(u"    凭本券当场换领相应品牌的销售通知单，本券仅限当场兑换有效，如不兑换视为自动放弃，本券作废。\n\n".encode('gbk'))
 
     usb.set('CENTER', '', '', 1, 1)
-    usb.text(u"技术支持\n坤鼎文化发展有限公司".encode('gbk') + "\n")
+    usb.text(u"技术支持\n坤鼎文化发展".encode('gbk') + "\n")
 
     usb.set('CENTER', '', '', 1, 1)
     usb.text(u"2016".encode('gbk') + "\n")
@@ -135,13 +146,13 @@ sizeData = [  # Camera parameters for different size settings
 sizeMode = 2
 txtInfoTop = 100        #从y坐标哪里开始显示
 txtDisplayDelay = 5     #提示信息显示5秒
-# pygame.mouse.set_visible(False)
+pygame.mouse.set_visible(False)
 
 # 摄像头的定义
 rgb = bytearray(sizeData[sizeMode][1][0] * sizeData[sizeMode][1][1] * 3)
 camera = picamera.PiCamera()
 camera.resolution = sizeData[sizeMode][1]
-camera.rotation = 180
+#camera.rotation = 180
 camera.crop = sizeData[sizeMode][2]
 MaxWaitingTime = 30  # 30秒摄像头启动等待
 begTimer = 0
@@ -162,7 +173,7 @@ pos = None
 infos = []
 
 
-runCamera = False
+#runCamera = False
 while 1:
     # 背景绘图
     screen.blit(bg, (0, 0))
@@ -176,35 +187,41 @@ while 1:
         if event.type == pygame.KEYDOWN:
             camera.close()
             sys.exit()
+        '''
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
+            # pos = pygame.mouse.get_pos()
             # label = myfont.render("click!", 1, (255, 255, 0))
-            if (not runCamera and (pos[0] > buttonrect.left) and (pos[0] < buttonrect.right) and
+            if (not runCamera):
+                and (pos[0] > buttonrect.left) and (pos[0] < buttonrect.right) and
                     (pos[1] > buttonrect.top) and (pos[1] < buttonrect.bottom)):
                 runCamera = True
                 begTimer = time.time()
             else:
                 runCamera = False
                 Echo(u"点我呀~~~")
+        '''
 
-    if time.time() - begTimer > MaxWaitingTime:
-        runCamera = False
+    #if time.time() - begTimer > MaxWaitingTime:
+    #    runCamera = False
     if label != None:
         screen.blit(label, ((width - label.get_width()) / 2, 100))
 
+    '''
     if not runCamera:
         screen.blit(button, buttonrect)
     else:
-        image = GetPrevImg()
-        img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+    '''
+    image = GetPrevImg()
+    img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
 
-        if img:
-            # 摄像头预览图的位置
-            screen.blit(img, ((width - img.get_width()) / 2, (height - img.get_height()) / 2 + 200))
-            # 扫码读取
-            txt = ScanCode(image)
-            if txt != None:
-                Print()
+    if img:
+        # 摄像头预览图的位置
+        screen.blit(img, ((width - img.get_width()) / 2, (height - img.get_height()) / 2 + 200))
+        # 扫码读取
+        txt = ScanCode(image)
+        if txt != None:
+            CheckQRCode(txt)
+            runCamera = False
 
     Display()
 
