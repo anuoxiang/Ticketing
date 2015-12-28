@@ -112,12 +112,10 @@ def Echo(content):
     Display()
 
 def Display():
-    if infos.__len__()>0:
-        screen.blit(txtBg, txtRect)
     for info in infos:
         label = myfont.render(info.name, 1, (32, 87, 137))
-        screen.blit(label,
-                    ((width - label.get_width()) / 2,
+        screen.blit(txtBg,(0,txtInfoTop+ label.get_height()*infos.index(info)))
+        screen.blit(label,((width - label.get_width()) / 2,
                      txtInfoTop + label.get_height()*infos.index(info)))
 
     #过期的移走
@@ -139,7 +137,8 @@ os.putenv('SDL_MOUSEDEV', '/dev/input/mouse0')
 size = width, height = 600, 1024
 screen = pygame.display.set_mode(size)
 # screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-myfont = pygame.font.SysFont("wenquanyizenhei", 30)
+myfont = pygame.font.Font("msyhbd.ttc", 32)#雅黑粗体
+#myfont = pygame.font.SysFont("wenquanyizenhei", 30)
 sizeData = [  # Camera parameters for different size settings
               # Full res      Viewfinder  Crop window
               [(2592, 1944), (320, 240), (0.0, 0.0, 1.0, 1.0)],  # Large
@@ -180,9 +179,6 @@ pos = None
 infos = []
 
 txtBg = pygame.image.load('txtBackground.png')
-txtRect = txtBg.get_rect()
-txtRect.x = 0
-txtRect.y = 93
 
 
 #runCamera = False
@@ -200,32 +196,12 @@ while 1:
             camera.close()
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            Echo(u"click")
-        '''
+            Echo(u'点我呀')
 
-            # pos = pygame.mouse.get_pos()
-            # label = myfont.render("click!", 1, (255, 255, 0))
-            if (not runCamera):
-                and (pos[0] > buttonrect.left) and (pos[0] < buttonrect.right) and
-                    (pos[1] > buttonrect.top) and (pos[1] < buttonrect.bottom)):
-                runCamera = True
-                begTimer = time.time()
-            else:
-                runCamera = False
-                Echo(u"点我呀~~~")
-        '''
-
-    #if time.time() - begTimer > MaxWaitingTime:
-    #    runCamera = False
     if label != None:
         screen.blit(label, ((width - label.get_width()) / 2, 100))
     screen.blit(button, buttonrect)
 
-    '''
-    if not runCamera:
-        screen.blit(button, buttonrect)
-    else:
-    '''
     image = GetPrevImg()
     img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
 
