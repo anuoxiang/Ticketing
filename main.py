@@ -112,15 +112,17 @@ def Echo(content):
     Display()
 
 def Display():
+    if infos.__len__()>0:
+        screen.blit(txtBg, txtRect)
     for info in infos:
-        label = myfont.render(info.name, 1, (255, 255, 0))
+        label = myfont.render(info.name, 1, (32, 87, 137))
         screen.blit(label,
                     ((width - label.get_width()) / 2,
                      txtInfoTop + label.get_height()*infos.index(info)))
 
     #过期的移走
     for info in infos:
-        if info.isDone:
+        if not info.isDone:
             infos.remove(info)
 
 
@@ -142,7 +144,7 @@ sizeData = [  # Camera parameters for different size settings
               # Full res      Viewfinder  Crop window
               [(2592, 1944), (320, 240), (0.0, 0.0, 1.0, 1.0)],  # Large
               [(1920, 1080), (320, 180), (0.1296, 0.2222, 0.7408, 0.5556)],  # Med
-              [(1440, 1080), (320, 320), (0.2222, 0.2222, 0.5556, 0.5556)]]  # Small
+              [(1440, 1080), (320, 240), (0.2222, 0.2222, 0.5556, 0.5556)]]  # Small
 sizeMode = 2
 txtInfoTop = 100        #从y坐标哪里开始显示
 txtDisplayDelay = 5     #提示信息显示5秒
@@ -156,21 +158,31 @@ camera.resolution = sizeData[sizeMode][1]
 camera.crop = sizeData[sizeMode][2]
 MaxWaitingTime = 30  # 30秒摄像头启动等待
 begTimer = 0
-
+border = pygame.image.load('viewBorder.png')
+borderrect = border.get_rect()
+borderrect.x = 140
+borderrect.y = 670
 
 # 按钮定义
-speed = [0, -1]
+speed = [0, -2]
 button = pygame.image.load('exchange.png')
-buttonOrgPos = {"x": 135, "y": 577}# 原始位置
+buttonOrgPos = {"x": 140, "y": 457}# 原始位置
 buttonrect = button.get_rect()
 buttonrect.x = buttonOrgPos["x"]
 buttonrect.y = buttonOrgPos["y"]
+
+#背景
 bg = pygame.image.load('home.jpg')
 pygame.mouse.set_pos(300, 512)
 pos = None
 
 # 信息提示
 infos = []
+
+txtBg = pygame.image.load('txtBackground.png')
+txtRect = txtBg.get_rect()
+txtRect.x = 0
+txtRect.y = 93
 
 
 #runCamera = False
@@ -179,7 +191,7 @@ while 1:
     screen.blit(bg, (0, 0))
 
     buttonrect = buttonrect.move(speed)
-    if buttonrect.top < buttonOrgPos["y"] - 30 or buttonrect.top > buttonOrgPos["y"]:
+    if buttonrect.top < buttonOrgPos["y"] - 16 or buttonrect.top > buttonOrgPos["y"]:
         speed[1] = -speed[1]
 
     label = None
@@ -187,8 +199,10 @@ while 1:
         if event.type == pygame.KEYDOWN:
             camera.close()
             sys.exit()
-        '''
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            Echo(u"click")
+        '''
+
             # pos = pygame.mouse.get_pos()
             # label = myfont.render("click!", 1, (255, 255, 0))
             if (not runCamera):
@@ -205,6 +219,7 @@ while 1:
     #    runCamera = False
     if label != None:
         screen.blit(label, ((width - label.get_width()) / 2, 100))
+    screen.blit(button, buttonrect)
 
     '''
     if not runCamera:
@@ -216,13 +231,13 @@ while 1:
 
     if img:
         # 摄像头预览图的位置
-        screen.blit(img, ((width - img.get_width()) / 2, (height - img.get_height()) / 2 + 200))
+        screen.blit(img, (140, 670))
+        screen.blit(border,borderrect)
         # 扫码读取
         txt = ScanCode(image)
         if txt != None:
             CheckQRCode(txt)
             runCamera = False
-
     Display()
 
     pygame.display.flip()
