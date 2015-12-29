@@ -133,6 +133,9 @@ def Display():
         if int(time.time()) - info.initTime >= txtDisplayDelay:
             infos.remove(info)
 
+    # 显示时间
+    timenow = timefont.render(datetime.now().strftime("%m/%d %H:%M:%S"), 1, (32, 87, 137))
+    screen.blit(timenow,(10,930))
 
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 # os.putenv('SDL_FBDEV'      , '/dev/fb1')
@@ -183,6 +186,10 @@ pos = None
 infos = []
 txtBg = pygame.image.load('txtBackground.png')
 txtDisplayDelay = 5
+
+# 时间提示
+timefont = pygame.font.Font("msyhbd.ttc", 12)
+
 # runCamera = False
 while 1:
     # 背景绘图
@@ -217,5 +224,6 @@ while 1:
             CheckQRCode(txt)
             runCamera = False
     Display()
+
 
     pygame.display.flip()
